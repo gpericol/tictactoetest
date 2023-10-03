@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebAssembly Go Example</title>
+    <script src="wasm_exec.js"></script>
+    <style>
+        .board {
+            border-collapse: collapse;
+        }
+        .tictactoe-cell {
+            border: 1px solid black;
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h3>TicTacToe</h3>
+    <table class="board">
+        <tr>
+            <td class="tictactoe-cell" id="cell-00"></td>
+            <td class="tictactoe-cell" id="cell-01"></td>
+            <td class="tictactoe-cell" id="cell-02"></td>
+        </tr>
+        <tr>
+            <td class="tictactoe-cell" id="cell-10"></td>
+            <td class="tictactoe-cell" id="cell-11"></td>
+            <td class="tictactoe-cell" id="cell-12"></td>
+        </tr>
+        <tr>
+            <td class="tictactoe-cell" id="cell-20"></td>
+            <td class="tictactoe-cell" id="cell-21"></td>
+            <td class="tictactoe-cell" id="cell-22"></td>
+        </tr>
+    </table>
+    <script>
+        const go = new Go();
+        WebAssembly.instantiateStreaming(fetch('main.wasm'), go.importObject).then((result) => {
+            go.run(result.instance);
+            setCode("TESTING");
+        
+            function printCells() {
+                const board = getBoard();
+                for (let y = 0; y < 3; y++) 
+                    for(let x = 0; x < 3; x++) 
+                        document.getElementById(`cell-${y}${x}`).innerHTML = board[y][x];
+            }
+
+            const cells = document.getElementsByClassName('tictactoe-cell');
+            
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].addEventListener('click', function() {
+                    const id = this.id;
+                    const x = parseInt(id[5]);
+                    const y = parseInt(id[6]);
+                    value = playTurn(x,y);
+                    
+                    printCells();
+                    if(value == "+"){
+                        console.log("OK");
+                    }
+                    else if(value == "-"){
+                        console.log("No Move");
+                    }
+                    else if(value == "draw"){
+                        alert("Draw");
+                        resetBoard()
+                    }
+                    else if(value == "loss"){
+                        alert("Loss");
+                        resetBoard()
+                    }
+                    else {
+                        alert(value);
+                        resetBoard()
+                    }
+                    printCells();
+                });
+            }
+        });
+
+        
+    </script>
+</body>
+</html>
